@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ChemE Units — Engineering Unit Converter</title>
+  <title>ChemEngine — Engineering Unit Converter</title>
   <meta name="description"
     content="Dimensional analysis unit converter and chemistry calculator for chemical engineering students. Convert compound units, calculate molar mass, look up constants, and balance chemical equations.">
 
@@ -1303,7 +1303,7 @@ html, body {
           d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18" />
       </svg>
     </div>
-    <div style="font-size:18px;font-weight:700;color:hsl(220,15%,12%);letter-spacing:-0.4px">ChemE Units</div>
+    <div style="font-size:18px;font-weight:700;color:hsl(220,15%,12%);letter-spacing:-0.4px">ChemEngine</div>
     <div style="display:flex;gap:6px;align-items:center;color:hsl(220,8%,58%);font-size:13px">
       <span class="loading-dot" style="animation-delay:0s"></span>
       <span class="loading-dot" style="animation-delay:0.2s"></span>
@@ -1327,7 +1327,7 @@ html, body {
             </svg>
           </div>
           <div>
-            <div class="logo-text">ChemE Units</div>
+            <div class="logo-text">ChemEngine</div>
             <div class="logo-sub">Dimensional Analysis Calculator</div>
           </div>
         </div>
@@ -1364,7 +1364,7 @@ html, body {
           <span>Convert</span>
         </button>
         <button class="mobile-nav-btn" data-tab="molar">
-          <span class="mob-icon">⚗</span>
+          <span class="mob-icon">M</span>
           <span>Molar</span>
         </button>
         <button class="mobile-nav-btn" data-tab="periodic">
@@ -1583,12 +1583,25 @@ html, body {
               <div class="card-title">Equation Input</div>
 
               <div class="input-group">
-                <label class="input-label" for="eq-input">Chemical Equation</label>
-                <input id="eq-input" class="input-field" type="text" placeholder="e.g. H2 + O2 -> H2O"
-                  autocomplete="off" spellcheck="false" style="font-size:16px"
-                  aria-label="Chemical equation to balance">
-                <span class="input-hint">Use + between compounds · use -> or → as reaction arrow · parentheses Ca(OH)2
-                  supported</span>
+                <label class="input-label" for="reactants-input">Reactants</label>
+                <input id="reactants-input" class="input-field" type="text" placeholder="e.g. H2 + O2"
+                  autocomplete="off" spellcheck="false" style="font-size:16px;font-family:var(--font-mono)"
+                  aria-label="Reactants">
+                <span class="input-hint">Separate compounds with + · parentheses supported: Ca(OH)2</span>
+              </div>
+
+              <div
+                style="display:flex;align-items:center;justify-content:center;gap:12px;padding:4px 0;color:var(--text-muted);font-size:22px;letter-spacing:2px">
+                <div style="flex:1;height:1px;background:var(--border)"></div>
+                <span style="font-size:18px;color:var(--accent-primary);font-weight:600">&#8594;</span>
+                <div style="flex:1;height:1px;background:var(--border)"></div>
+              </div>
+
+              <div class="input-group">
+                <label class="input-label" for="products-input">Products</label>
+                <input id="products-input" class="input-field" type="text" placeholder="e.g. H2O" autocomplete="off"
+                  spellcheck="false" style="font-size:16px;font-family:var(--font-mono)" aria-label="Products">
+                <span class="input-hint">Separate compounds with +</span>
               </div>
 
               <!-- Redox toggle -->
@@ -3247,23 +3260,25 @@ window.LibraryUI = LibraryUI;
 
 const BalancerUI = (() => {
 
+    // Examples split into [reactants, products]
     const EXAMPLES = [
-        'H2 + O2 -> H2O',
-        'Fe + O2 -> Fe2O3',
-        'C2H6 + O2 -> CO2 + H2O',
-        'NaOH + H2SO4 -> Na2SO4 + H2O',
-        'Al + HCl -> AlCl3 + H2',
-        'Ca(OH)2 + H3PO4 -> Ca3(PO4)2 + H2O',
-        'C6H12O6 + O2 -> CO2 + H2O',
-        'KMnO4 + HCl -> MnCl2 + Cl2 + H2O + KCl',
+        ['H2 + O2', 'H2O'],
+        ['Fe + O2', 'Fe2O3'],
+        ['C2H6 + O2', 'CO2 + H2O'],
+        ['NaOH + H2SO4', 'Na2SO4 + H2O'],
+        ['Al + HCl', 'AlCl3 + H2'],
+        ['Ca(OH)2 + H3PO4', 'Ca3(PO4)2 + H2O'],
+        ['C6H12O6 + O2', 'CO2 + H2O'],
+        ['KMnO4 + HCl', 'MnCl2 + Cl2 + H2O + KCl'],
     ];
 
     function init() {
         renderExamples();
 
         document.getElementById('balance-btn').addEventListener('click', doBalance);
-        document.getElementById('eq-input').addEventListener('keydown', e => {
-            if (e.key === 'Enter') doBalance();
+        ['reactants-input', 'products-input'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') doBalance(); });
         });
 
         // Redox toggle shows/hides medium selector
@@ -3275,29 +3290,39 @@ const BalancerUI = (() => {
     function renderExamples() {
         const list = document.getElementById('balancer-examples');
         if (!list) return;
-        list.innerHTML = EXAMPLES.map(ex =>
-            `<button class="example-btn">${escHtml(ex)}</button>`
+        list.innerHTML = EXAMPLES.map(([r, p]) =>
+            `<button class="example-btn">${escHtml(r)} → ${escHtml(p)}</button>`
         ).join('');
         list.querySelectorAll('.example-btn').forEach((btn, i) => {
             btn.addEventListener('click', () => {
-                document.getElementById('eq-input').value = EXAMPLES[i];
+                document.getElementById('reactants-input').value = EXAMPLES[i][0];
+                document.getElementById('products-input').value = EXAMPLES[i][1];
                 doBalance();
             });
         });
     }
 
     function doBalance() {
-        const raw = document.getElementById('eq-input').value.trim();
+        const reactants = document.getElementById('reactants-input').value.trim();
+        const products = document.getElementById('products-input').value.trim();
         const isRedox = document.getElementById('redox-toggle').checked;
         const medium = document.getElementById('medium-select')?.value || 'acidic';
         const out = document.getElementById('balancer-output');
 
-        out.innerHTML = '';
-        if (!raw) {
-            document.getElementById('eq-input').classList.add('error');
+        // Validate
+        let hasError = false;
+        ['reactants-input', 'products-input'].forEach(id => {
+            const el = document.getElementById(id);
+            if (!el.value.trim()) { el.classList.add('error'); hasError = true; }
+            else el.classList.remove('error');
+        });
+        if (hasError) {
+            out.innerHTML = `<div class="error-card"><span class="error-icon">⚠</span><div>Fill in both Reactants and Products.</div></div>`;
             return;
         }
-        document.getElementById('eq-input').classList.remove('error');
+
+        // Combine into arrow notation for the engine
+        const raw = `${reactants} -> ${products}`;
 
         try {
             const result = EquationBalancer.balance(raw, isRedox ? 'redox' : 'standard', medium);
@@ -3312,13 +3337,6 @@ const BalancerUI = (() => {
     }
 
     function renderResult(el, result) {
-        // Highlight coefficients in the balanced equation
-        const highlighted = result.balanced.replace(
-            /^(\d+\s)|((?<=\+\s)(\d+\s))|((?<=→\s)(\d+\s))/g,
-            m => `<span class="balanced-coeff">${escHtml(m)}</span>`
-        );
-
-        // Build a clean subscript-formatted version
         const fmtFormula = s => escHtml(s).replace(/(\d+)/g, '<sub>$1</sub>');
 
         const reactantStr = result.reactants
