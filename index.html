@@ -2334,12 +2334,20 @@ window.EquationBalancer = EquationBalancer;
 
 /**
  * ui_converter.js — Converter Tab UI Logic
+ *
+ * Mol-mass bridge detection supports compound units, e.g.:
+ *   kJ/kg  ↔  kJ/mol        (d = -1)
+ *   mol/m³ ↔  kg/m³         (d = +1)
+ *   g/s    ↔  mol/s         (d = +1)
+ *   1/mol  ↔  1/kg          (d = +1)
+ *   mol    ↔  kg            (d = +1)  ← original case still works
+ *
+ * Algorithm: if srcDim and tgtDim differ ONLY by M=+d, N=-d (all other dims equal)
+ * then: result = value × srcFactor × (MW_kg_mol)^d / tgtFactor
  */
 'use strict';
 
 const ConverterUI = (() => {
-
-  let _lastResult = null;
 
   function init() {
     document.getElementById('convert-btn').addEventListener('click', doConvert);
@@ -2357,11 +2365,11 @@ const ConverterUI = (() => {
       });
     });
 
-    // Hide compound field initially
     const group = document.getElementById('compound-input-group');
     if (group) group.style.display = 'none';
   }
 
+  // ── Validation ────────────────────────────────────────────────────
   function validateUnitField(id) {
     const input = document.getElementById(id);
     const val = input.value.trim();
@@ -2370,6 +2378,28 @@ const ConverterUI = (() => {
     catch { input.classList.add('error'); }
   }
 
+  // ── Detect mol↔mass exponent in compound units ────────────────────
+  /**
+   * Returns integer d if srcDim and tgtDim differ ONLY by M=+d, N=-d.
+   * e.g. kJ/kg → kJ/mol: M goes from 0 to 1, N goes from 0 to -1 → d=+1
+   * Returns null if not a mol-mass bridge.
+   */
+  function detectMolMassExponent(srcDim, tgtDim) {
+    const DIM_KEYS = ['M', 'L', 'T', 'Th', 'N', 'I', 'J'];
+    const diff = {};
+    for (const k of DIM_KEYS) diff[k] = (tgtDim[k] || 0) - (srcDim[k] || 0);
+
+    const d = diff.M;
+    if (d === 0) return null;                  // no mass difference at all
+    if (!Number.isInteger(d)) return null;     // must be integer
+    if (diff.N !== -d) return null;            // N must compensate M exactly
+    for (const k of ['L', 'T', 'Th', 'I', 'J']) {
+      if ((diff[k] || 0) !== 0) return null; // all other dims must match
+    }
+    return d;
+  }
+
+  // ── Show compound field when mol↔mass bridge detected ────────────
   function updateCompoundVisibility() {
     const src = document.getElementById('src-unit').value.trim();
     const tgt = document.getElementById('tgt-unit').value.trim();
@@ -2379,7 +2409,7 @@ const ConverterUI = (() => {
       if (!src || !tgt) { group.style.display = 'none'; return; }
       const s = Engine.computeFactorAndDim(src);
       const t = Engine.computeFactorAndDim(tgt);
-      group.style.display = MolarMass.isMolMassConversion(s.dim, t.dim) ? '' : 'none';
+      group.style.display = detectMolMassExponent(s.dim, t.dim) !== null ? '' : 'none';
     } catch { group.style.display = 'none'; }
   }
 
@@ -2390,6 +2420,7 @@ const ConverterUI = (() => {
     updateCompoundVisibility();
   }
 
+  // ── Main conversion ───────────────────────────────────────────────
   function doConvert() {
     const valueStr = document.getElementById('value-input').value.trim();
     const srcExpr = document.getElementById('src-unit').value.trim();
@@ -2408,20 +2439,26 @@ const ConverterUI = (() => {
       const srcInfo = Engine.computeFactorAndDim(srcExpr);
       const tgtInfo = Engine.computeFactorAndDim(tgtExpr);
 
-      if (MolarMass.isMolMassConversion(srcInfo.dim, tgtInfo.dim)) {
+      const d = detectMolMassExponent(srcInfo.dim, tgtInfo.dim);
+
+      if (d !== null) {
+        // Mol ↔ mass bridge (possibly inside a compound unit)
         const compoundField = document.getElementById('compound-input');
         const formula = (compoundField?.value || '').trim();
         document.getElementById('compound-input-group').style.display = '';
         if (!formula) {
           if (compoundField) { compoundField.classList.add('error'); compoundField.focus(); }
-          showError(outputEl, 'Enter the compound formula in the "Compound" field above to convert between mass and amount of substance.');
+          showError(outputEl,
+            'Enter the compound formula in the "Compound" field above.\n' +
+            'Required whenever mass (kg, g, lb…) and amount (mol) appear in corresponding positions.');
           return;
         }
         if (compoundField) compoundField.classList.remove('error');
-        doMolMassConvert(value, srcExpr, tgtExpr, srcInfo.dim, tgtInfo.dim, formula, outputEl);
+        doMolMassConvert(value, srcExpr, tgtExpr, srcInfo.factor, tgtInfo.factor, tgtInfo.dim, d, formula, outputEl);
         return;
       }
 
+      // Standard conversion (same dimensions)
       const result = Engine.convert(value, srcExpr, tgtExpr);
       renderResult(outputEl, value, srcExpr, tgtExpr, result);
 
@@ -2430,40 +2467,39 @@ const ConverterUI = (() => {
     }
   }
 
-  function doMolMassConvert(value, srcExpr, tgtExpr, srcDim, tgtDim, formula, outputEl) {
+  /**
+   * General mol↔mass conversion for compound units.
+   *
+   * Math:
+   *   result_SI  = value × srcFactor × (MW_kg_mol)^d
+   *   resultValue = result_SI / tgtFactor
+   *
+   * where d = detectMolMassExponent(srcDim, tgtDim)
+   *   d > 0 : mass is being replaced by moles going src→tgt
+   *   d < 0 : moles are being replaced by mass going src→tgt
+   */
+  function doMolMassConvert(value, srcExpr, tgtExpr, srcFactor, tgtFactor, tgtDim, d, formula, outputEl) {
     try {
       const massCalc = MolarMass.calc(formula);
-      const mw = massCalc.total;
-      const srcIsAmount = srcDim.N === 1 && srcDim.M === 0;
-      let resultValue;
-      if (srcIsAmount) {
-        const kg = MolarMass.molToKg(value, mw);
-        resultValue = Engine.convert(kg, 'kg', tgtExpr).value;
-      } else {
-        const kg = Engine.convert(value, srcExpr, 'kg').value;
-        const mol = MolarMass.kgToMol(kg, mw);
-        resultValue = Engine.convert(mol, 'mol', tgtExpr).value;
-      }
-      // Build a result object compatible with renderResult
-      const dummyResult = {
-        value: resultValue,
-        tgtDim: tgtDim,
-        simplified: null,
-      };
-      renderResult(outputEl, value, srcExpr, tgtExpr, dummyResult,
-        `Molar mass of ${formula}: ${mw.toFixed(4)} g/mol`);
+      const mw_kg_mol = massCalc.total * 1e-3;           // g/mol → kg/mol
+      const result_SI = value * srcFactor * Math.pow(mw_kg_mol, d);
+      const resultValue = result_SI / tgtFactor;
+
+      const dummyResult = { value: resultValue, tgtDim: tgtDim, simplified: null };
+      const note = `Molar mass of ${formula}: ${massCalc.total.toFixed(4)} g/mol  (exponent d=${d > 0 ? '+' : ''}${d})`;
+      renderResult(outputEl, value, srcExpr, tgtExpr, dummyResult, note);
     } catch (err) {
       showError(outputEl, err.message);
     }
   }
 
+  // ── Result rendering ──────────────────────────────────────────────
   function renderResult(el, inputValue, srcExpr, tgtExpr, result, extraNote) {
     const n = result.value;
     const std = Engine.formatStandard(n);
     const sci = Engine.formatScientific(n, 4);
     const eng = Engine.formatEngineering(n, 4);
     const dimStr = Engine.dimToString(result.tgtDim);
-    _lastResult = { std, tgtExpr };
 
     let simplifiedHtml = '';
     if (result.simplified && result.simplified.symbol !== tgtExpr) {
@@ -2511,7 +2547,7 @@ const ConverterUI = (() => {
           <span class="dim-label">Dimension:</span>${escHtml(dimStr)}
         </div>
         <div style="margin-top:10px;font-size:11px;color:var(--text-muted);font-family:var(--font-mono)">
-          ${escHtml(inputValue + '')} ${escHtml(srcExpr)} = ${std} ${escHtml(tgtExpr)}
+          ${escHtml(String(inputValue))} ${escHtml(srcExpr)} = ${std} ${escHtml(tgtExpr)}
         </div>
       </div>`;
 
