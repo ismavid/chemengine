@@ -1,24 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ChemE Units — Engineering Unit Converter</title>
-  <meta name="description" content="Dimensional analysis unit converter and chemistry calculator for chemical engineering students. Convert compound units, calculate molar mass, look up constants, and balance chemical equations.">
+  <meta name="description"
+    content="Dimensional analysis unit converter and chemistry calculator for chemical engineering students. Convert compound units, calculate molar mass, look up constants, and balance chemical equations.">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
 
   <link rel="stylesheet" href="index.css">
 </head>
+
 <body>
 
   <!-- Loading Screen -->
-  <div id="app-loading" style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;position:relative;z-index:1">
-    <div style="width:52px;height:52px;background:hsl(212,90%,48%);border-radius:14px;display:flex;align-items:center;justify-content:center;animation:pulse 1.5s ease infinite">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
+  <div id="app-loading"
+    style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;position:relative;z-index:1">
+    <div
+      style="width:52px;height:52px;background:hsl(212,90%,48%);border-radius:14px;display:flex;align-items:center;justify-content:center;animation:pulse 1.5s ease infinite">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path
+          d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18" />
       </svg>
     </div>
     <div style="font-size:18px;font-weight:700;color:hsl(220,15%,12%);letter-spacing:-0.4px">ChemE Units</div>
@@ -38,8 +47,10 @@
       <header class="app-header">
         <div class="app-logo">
           <div class="logo-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18" />
             </svg>
           </div>
           <div>
@@ -67,7 +78,8 @@
         <button class="tab-btn" data-tab="balancer" role="tab" aria-selected="false" id="tab-btn-balancer">
           Eq. Balancer
         </button>
-        <button class="tab-btn" data-tab="library" role="tab" aria-selected="false" id="tab-btn-library" style="display:none">
+        <button class="tab-btn" data-tab="library" role="tab" aria-selected="false" id="tab-btn-library"
+          style="display:none">
           Unit Library
         </button>
       </nav>
@@ -124,19 +136,14 @@
 
                   <div class="input-group">
                     <label class="input-label" for="value-input">Value</label>
-                    <input id="value-input" class="input-field" type="number"
-                      placeholder="e.g. 101.325"
-                      value="1"
-                      step="any" autocomplete="off"
-                      aria-label="Numeric value to convert">
+                    <input id="value-input" class="input-field" type="number" placeholder="e.g. 101.325" value="1"
+                      step="any" autocomplete="off" aria-label="Numeric value to convert">
                   </div>
 
                   <div class="input-group">
                     <label class="input-label" for="src-unit">From Unit</label>
-                    <input id="src-unit" class="input-field" type="text"
-                      placeholder="e.g. atm, kg/m^3, kJ/mol"
-                      autocomplete="off" spellcheck="false"
-                      aria-label="Source unit expression">
+                    <input id="src-unit" class="input-field" type="text" placeholder="e.g. atm, kg/m^3, kJ/mol"
+                      autocomplete="off" spellcheck="false" aria-label="Source unit expression">
                     <span class="input-hint">Use * for multiplication: kg*m/s^2 · N*m · W/(m^2*K)</span>
                   </div>
 
@@ -146,16 +153,27 @@
 
                   <div class="input-group">
                     <label class="input-label" for="tgt-unit">To Unit</label>
-                    <input id="tgt-unit" class="input-field" type="text"
-                      placeholder="e.g. Pa, lb/ft^3, BTU/lbmol"
-                      autocomplete="off" spellcheck="false"
-                      aria-label="Target unit expression">
+                    <input id="tgt-unit" class="input-field" type="text" placeholder="e.g. Pa, lb/ft^3, BTU/lbmol"
+                      autocomplete="off" spellcheck="false" aria-label="Target unit expression">
+                  </div>
+
+                  <!-- Compound formula (shown only for mol ↔ mass conversions) -->
+                  <div class="input-group" id="compound-input-group" style="display:none">
+                    <label class="input-label" for="compound-input">Compound Formula</label>
+                    <input id="compound-input" class="input-field" type="text" placeholder="e.g. H2O, H2SO4, C6H12O6"
+                      autocomplete="off" spellcheck="false" style="font-family:var(--font-mono)"
+                      aria-label="Chemical compound formula for mol/mass conversion">
+                    <span class="input-hint">Required for mol ↔ mass conversions · supports nested groups:
+                      Ca(OH)₂</span>
                   </div>
 
                   <button class="convert-btn" id="convert-btn" style="margin-top:8px" aria-label="Convert units">
                     Convert
                   </button>
                 </div>
+
+                <!-- Result (immediately under the input panel) -->
+                <div id="converter-output"></div>
 
                 <!-- Quick examples panel -->
                 <div class="card">
@@ -164,7 +182,8 @@
 
                   <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">
                     <div class="card-title" style="margin-bottom:10px">Accepted Formats</div>
-                    <div style="display:flex;flex-direction:column;gap:5px;font-family:var(--font-mono);font-size:12px;color:var(--text-secondary)">
+                    <div
+                      style="display:flex;flex-direction:column;gap:5px;font-family:var(--font-mono);font-size:12px;color:var(--text-secondary)">
                       <div><span style="color:var(--accent-primary)">kg*m/s^2</span> — asterisk multiplication</div>
                       <div><span style="color:var(--accent-primary)">kg/m3</span> — inline exponent</div>
                       <div><span style="color:var(--accent-primary)">kg/m^3</span> — caret exponent</div>
@@ -176,20 +195,21 @@
                 </div>
               </div>
 
-              <!-- Result -->
-              <div id="converter-output"></div>
+
             </div>
 
             <!-- Unit library panel (desktop) -->
             <div class="unit-library-panel">
               <div class="card-title" style="margin-bottom:8px">Unit Library</div>
-              <input id="library-search" class="input-field library-search" type="text"
-                placeholder="Search units…" autocomplete="off" spellcheck="false"
-                aria-label="Search unit library">
+              <input id="library-search" class="input-field library-search" type="text" placeholder="Search units…"
+                autocomplete="off" spellcheck="false" aria-label="Search unit library">
               <div style="display:grid;grid-template-columns:56px 1fr 80px;gap:6px;padding:4px 8px;margin-top:4px">
-                <span style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Symbol</span>
-                <span style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Name</span>
-                <span style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;text-align:right">Quantity</span>
+                <span
+                  style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Symbol</span>
+                <span
+                  style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Name</span>
+                <span
+                  style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;text-align:right">Quantity</span>
               </div>
               <div class="library-list" id="library-list"></div>
             </div>
@@ -206,10 +226,8 @@
               <div class="card-title">Formula Input</div>
               <div class="input-group">
                 <label class="input-label" for="molar-formula-input">Chemical Formula</label>
-                <input id="molar-formula-input" class="input-field" type="text"
-                  placeholder="e.g. H2O, H2SO4, C6H12O6"
-                  autocomplete="off" spellcheck="false"
-                  style="font-size:20px;padding:14px 16px"
+                <input id="molar-formula-input" class="input-field" type="text" placeholder="e.g. H2O, H2SO4, C6H12O6"
+                  autocomplete="off" spellcheck="false" style="font-size:20px;padding:14px 16px"
                   aria-label="Chemical formula">
                 <span class="input-hint">Supports: nested groups Ca(OH)₂, hydrates CuSO₄·5H₂O</span>
               </div>
@@ -236,7 +254,8 @@
 
             <div id="molar-output">
               <div class="card" style="color:var(--text-muted);text-align:center;padding:40px 20px;font-size:14px">
-                Enter a chemical formula and press <strong style="color:var(--text-secondary)">Calculate</strong> or press Enter.
+                Enter a chemical formula and press <strong style="color:var(--text-secondary)">Calculate</strong> or
+                press Enter.
               </div>
             </div>
           </div>
@@ -254,10 +273,8 @@
           </div>
 
           <div class="pt-search-wrap">
-            <input id="pt-search" class="input-field" type="text"
-              placeholder="Search by name, symbol, Z, or category…"
-              style="font-family:var(--font-sans);font-size:14px"
-              aria-label="Search periodic table">
+            <input id="pt-search" class="input-field" type="text" placeholder="Search by name, symbol, Z, or category…"
+              style="font-family:var(--font-sans);font-size:14px" aria-label="Search periodic table">
           </div>
 
           <div class="pt-legend" id="pt-legend"></div>
@@ -274,8 +291,7 @@
 
           <div class="constants-search-row">
             <input id="constants-search" class="input-field" type="text"
-              placeholder="Search by name, symbol, unit, or description…"
-              aria-label="Search engineering constants">
+              placeholder="Search by name, symbol, unit, or description…" aria-label="Search engineering constants">
           </div>
 
           <div class="category-filter" id="cat-filters" style="margin-bottom:var(--gap-lg)"></div>
@@ -295,12 +311,11 @@
 
               <div class="input-group">
                 <label class="input-label" for="eq-input">Chemical Equation</label>
-                <input id="eq-input" class="input-field" type="text"
-                  placeholder="e.g. H2 + O2 -> H2O"
-                  autocomplete="off" spellcheck="false"
-                  style="font-size:16px"
+                <input id="eq-input" class="input-field" type="text" placeholder="e.g. H2 + O2 -> H2O"
+                  autocomplete="off" spellcheck="false" style="font-size:16px"
                   aria-label="Chemical equation to balance">
-                <span class="input-hint">Use + between compounds · use -> or → as reaction arrow · parentheses Ca(OH)2 supported</span>
+                <span class="input-hint">Use + between compounds · use -> or → as reaction arrow · parentheses Ca(OH)2
+                  supported</span>
               </div>
 
               <!-- Redox toggle -->
@@ -336,11 +351,13 @@
 
               <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">
                 <div class="card-title" style="margin-bottom:10px">Input Format</div>
-                <div style="display:flex;flex-direction:column;gap:5px;font-family:var(--font-mono);font-size:12px;color:var(--text-secondary)">
+                <div
+                  style="display:flex;flex-direction:column;gap:5px;font-family:var(--font-mono);font-size:12px;color:var(--text-secondary)">
                   <div><span style="color:var(--accent-primary)">H2 + O2 -> H2O</span></div>
                   <div><span style="color:var(--accent-primary)">Fe + O2 → Fe2O3</span></div>
                   <div><span style="color:var(--accent-primary)">Ca(OH)2 + HCl -> CaCl2 + H2O</span></div>
-                  <div style="color:var(--text-muted);font-size:11px;margin-top:4px">Subscripts written as plain numbers · parentheses supported · spaces ignored</div>
+                  <div style="color:var(--text-muted);font-size:11px;margin-top:4px">Subscripts written as plain numbers
+                    · parentheses supported · spaces ignored</div>
                 </div>
               </div>
             </div>
@@ -353,13 +370,15 @@
           <p class="section-sub">Reference list of all supported unit symbols. Tap a unit to pre-fill the converter.</p>
 
           <div class="card" style="padding:var(--gap-md)">
-            <input id="library-search-mobile" class="input-field library-search" type="text"
-              placeholder="Search units…" autocomplete="off" spellcheck="false"
-              aria-label="Search unit library">
+            <input id="library-search-mobile" class="input-field library-search" type="text" placeholder="Search units…"
+              autocomplete="off" spellcheck="false" aria-label="Search unit library">
             <div style="display:grid;grid-template-columns:56px 1fr 90px;gap:6px;padding:8px 8px 4px;margin-top:8px">
-              <span style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Symbol</span>
-              <span style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Name</span>
-              <span style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;text-align:right">Quantity</span>
+              <span
+                style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Symbol</span>
+              <span
+                style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Name</span>
+              <span
+                style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;text-align:right">Quantity</span>
             </div>
             <div class="library-list" id="library-list-mobile" style="max-height:65vh;overflow-y:auto"></div>
           </div>
@@ -370,32 +389,32 @@
   </div><!-- /#app-content -->
 
   <!-- Scripts: engine first, then modules, then app entry -->
- <script src="js/engine.js"></script>
-<script src="js/molar_mass.js"></script>
-<script src="js/ui_converter.js"></script>
-<script src="js/ui_molar.js"></script>
-<script src="js/ui_periodic.js"></script>
-<script src="js/ui_constants.js"></script>
-<script src="js/ui_favorites.js"></script>
-<script src="js/ui_library.js"></script>
-<script src="js/ui_balancer.js"></script>
-<script src="js/equation_balancer.js"></script>
-<script src="js/app.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/molar_mass.js"></script>
+  <script src="js/equation_balancer.js"></script>
+  <script src="js/ui_converter.js"></script>
+  <script src="js/ui_molar.js"></script>
+  <script src="js/ui_periodic.js"></script>
+  <script src="js/ui_constants.js"></script>
+  <script src="js/ui_favorites.js"></script>
+  <script src="js/ui_library.js"></script>
+  <script src="js/ui_balancer.js"></script>
+  <script src="js/app.js"></script>
 
   <!-- Quick examples (inline, no extra fetch) -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const examples = [
-        { label:'1 atm → Pa',          value:'1',      src:'atm',       tgt:'Pa'       },
-        { label:'1 Pa → atm',          value:'1',      src:'Pa',        tgt:'atm'      },
-        { label:'1 kg/m³ → lb/ft³',    value:'1',      src:'kg/m^3',    tgt:'lb/ft^3'  },
-        { label:'1 kJ/mol → J/mol',    value:'1',      src:'kJ/mol',    tgt:'J/mol'    },
-        { label:'1 N/m² → Pa',         value:'1',      src:'N/m^2',     tgt:'Pa'       },
-        { label:'1 BTU → J',           value:'1',      src:'BTU',       tgt:'J'        },
-        { label:'1 hp → W',            value:'1',      src:'hp',        tgt:'W'        },
-        { label:'60 mph → m/s',        value:'60',     src:'mph',       tgt:'m/s'      },
-        { label:'1 bar → Pa',          value:'1',      src:'bar',       tgt:'Pa'       },
-        { label:'1 g/mL → kg/m³',      value:'1',      src:'g/mL',      tgt:'kg/m^3'   },
+        { label: '1 atm → Pa', value: '1', src: 'atm', tgt: 'Pa' },
+        { label: '1 Pa → atm', value: '1', src: 'Pa', tgt: 'atm' },
+        { label: '1 kg/m³ → lb/ft³', value: '1', src: 'kg/m^3', tgt: 'lb/ft^3' },
+        { label: '1 kJ/mol → J/mol', value: '1', src: 'kJ/mol', tgt: 'J/mol' },
+        { label: '1 N/m² → Pa', value: '1', src: 'N/m^2', tgt: 'Pa' },
+        { label: '1 BTU → J', value: '1', src: 'BTU', tgt: 'J' },
+        { label: '1 hp → W', value: '1', src: 'hp', tgt: 'W' },
+        { label: '60 mph → m/s', value: '60', src: 'mph', tgt: 'm/s' },
+        { label: '1 bar → Pa', value: '1', src: 'bar', tgt: 'Pa' },
+        { label: '1 g/mL → kg/m³', value: '1', src: 'g/mL', tgt: 'kg/m^3' },
       ];
 
       const list = document.getElementById('examples-list');
@@ -408,8 +427,8 @@
       examples.forEach((ex, i) => {
         document.getElementById(`ex-btn-${i}`).addEventListener('click', () => {
           document.getElementById('value-input').value = ex.value;
-          document.getElementById('src-unit').value    = ex.src;
-          document.getElementById('tgt-unit').value    = ex.tgt;
+          document.getElementById('src-unit').value = ex.src;
+          document.getElementById('tgt-unit').value = ex.tgt;
           document.getElementById('convert-btn').click();
         });
       });
@@ -439,5 +458,5 @@
   </script>
 
 </body>
-</html>
 
+</html>
