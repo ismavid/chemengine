@@ -5100,17 +5100,25 @@ const CreUI = (() => {
         mount.innerHTML = html;
 
         // Render LaTeX dynamically
-        if (window.renderMathInElement) {
-            document.querySelectorAll('.latex-render').forEach(el => {
-                window.renderMathInElement(el, {
-                    delimiters: [
-                        { left: '$$', right: '$$', display: true },
-                        { left: '$', right: '$', display: false }
-                    ],
-                    throwOnError: false
+        function renderLatex() {
+            if (window.renderMathInElement) {
+                document.querySelectorAll('.latex-render').forEach(el => {
+                    if (!el.dataset.katexRendered) {
+                        window.renderMathInElement(el, {
+                            delimiters: [
+                                { left: '$$', right: '$$', display: true },
+                                { left: '$', right: '$', display: false }
+                            ],
+                            throwOnError: false
+                        });
+                        el.dataset.katexRendered = 'true';
+                    }
                 });
-            });
+            } else {
+                setTimeout(renderLatex, 100);
+            }
         }
+        renderLatex();
 
         // Add event listeners to Link Selectors
         document.querySelectorAll('.link-select').forEach(sel => {
