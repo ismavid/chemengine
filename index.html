@@ -4330,6 +4330,22 @@ const ConverterUI = (() => {
     updateBridgeVisibility();
   }
 
+  // ── Temperature affine conversion ───────────────────────────────────
+  /**
+   * Absolute temperature scales require an affine (offset + scale) conversion.
+   * Returns the converted value, or null if not a recognized temperature pair.
+   * Recognised symbols: K, °C, °F, °R
+   */
+  function tryTemperatureConvert(value, srcSym, tgtSym) {
+    // Convert everything to Kelvin first, then to target
+    const toKelvin = { 'K': v => v, '°C': v => v + 273.15, '°F': v => (v + 459.67) * 5 / 9, '°R': v => v * 5 / 9 };
+    const fromKelvin = { 'K': k => k, '°C': k => k - 273.15, '°F': k => k * 9 / 5 - 459.67, '°R': k => k * 9 / 5 };
+    if (toKelvin[srcSym] && fromKelvin[tgtSym]) {
+      return fromKelvin[tgtSym](toKelvin[srcSym](value));
+    }
+    return null;
+  }
+
   // ── Main conversion ───────────────────────────────────────────────
   function doConvert() {
     const valueStr = document.getElementById('value-input').value.trim();
@@ -4346,6 +4362,18 @@ const ConverterUI = (() => {
     if (isNaN(value)) { showError(outputEl, 'Invalid numeric value.'); return; }
 
     try {
+      // Special-case: affine temperature conversion (°C, °F, K, °R)
+      const tempResult = tryTemperatureConvert(value, srcExpr.trim(), tgtExpr.trim());
+      if (tempResult !== null) {
+        const tgtInfo = Engine.computeFactorAndDim(tgtExpr);
+        const fakeResult = { value: tempResult, tgtDim: tgtInfo.dim, simplified: null };
+        renderResult(outputEl, value, srcExpr, tgtExpr, fakeResult);
+        if (window.innerWidth <= 768) {
+          setTimeout(() => outputEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+        }
+        return;
+      }
+
       const srcInfo = Engine.computeFactorAndDim(srcExpr);
       const tgtInfo = Engine.computeFactorAndDim(tgtExpr);
 
@@ -6076,7 +6104,7 @@ const FluidUI = (() => {
                             <span>${L('fluid.global', 'Global Inputs')}</span>
                             <select id="fluid-load-ex" class="solution-select" style="width:185px;font-size:11px;padding:4px">
                                 <option value="">${L('fluid.load.ex', '-- Load Example --')}</option>
-                                <option value="11_2" ${sys.exampleId === '11_2' ? 'selected' : ''}>Ejercicio 11.2 (Mott)</option>
+                                <option value="11_2" ${sys.exampleId === '11_2' ? 'selected' : ''}>Ejercicio 11.1 (Mott)</option>
                                 <option value="11_29" ${sys.exampleId === '11_29' ? 'selected' : ''}>Ejercicio 11.29 (Mott)</option>
                             </select>
                         </div>
