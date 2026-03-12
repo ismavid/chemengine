@@ -6045,11 +6045,6 @@ const FluidUI = (() => {
         //     D = 0.3355 ft × 0.3048 = 0.10226 m  |  ε = 0.00015 ft × 0.3048 = 4.572×10⁻⁵ m
         //   Pipe run: 300 ft horizontal + 30 ft vertical descent = 330 ft total
         //     L_pipe = 330 ft × 0.3048 = 100.584 m
-        //   Fittings (Le/D equivalent-length method, D=0.10226 m):
-        //     Long-radius 90° elbow: Le/D=16  → Le = 16 × 0.10226 = 1.636 m
-        //     Gate valve 50% open:   Le/D=160 → Le = 160 × 0.10226 = 16.362 m
-        //     ΣLe = 17.998 m  (Le/D_total = 176)
-        //   Total effective length: L = 100.584 + 17.998 = 118.582 m
         //   Total available head:   H = 40 ft × 0.3048 = 12.192 m
         sys = {
             exampleId: 'app2',
@@ -6088,20 +6083,15 @@ const FluidUI = (() => {
                     // 4" Sch 40 steel pipe
                     // D = 0.3355 ft = 0.10226 m  |  A = 0.08840 ft² = 0.008213 m²
                     // L_pipe = 300 ft horizontal + 30 ft vertical = 330 ft = 100.584 m
-                    // Plus equivalent lengths of stated accessories (Le/D method):
-                    //   ΣLe = (16+160) × 0.10226 = 176 × 0.10226 = 17.998 m
-                    // L_total = 100.584 + 17.998 = 118.582 m
                     D: 0.10226,    // 4" Sch 40 internal diameter (m)
                     v: 'auto',
                     eps: 4.572e-5, // 0.00015 ft × 0.3048 = commercial steel (m)
-                    L: 118.582,    // effective total length: pipe run + Le/D fittings (m)
+                    L: 100.584,    // effective total length: pipe run (m)
                     has_pump: false,
                     eta: 1,
                     accessories: [
-                        // NOTE: Fittings are included in L via the Le/D equivalent-length method.
-                        // K=0 here — losses are entirely in the pipe friction term f·(L/D)·v²/2g.
-                        { name: '90° elbow — long-radius (flanged)', K: 0, qty: 1 },
-                        { name: 'Gate valve — 1/2 open', K: 0, qty: 1 }
+                        { name: '90° elbow — long-radius (flanged)', K: 0.36, qty: 1 },
+                        { name: 'Gate valve — 1/2 open', K: 5.6, qty: 1 }
                     ]
                 }
             ]
