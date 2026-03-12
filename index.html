@@ -6048,25 +6048,9 @@ const FluidUI = (() => {
         //   Fittings (Le/D equivalent-length method, D=0.10226 m):
         //     Long-radius 90° elbow: Le/D=16  → Le = 16 × 0.10226 = 1.636 m
         //     Gate valve 50% open:   Le/D=160 → Le = 160 × 0.10226 = 16.362 m
-        //     Sharp inlet:           Le/D=28  → Le = 28 × 0.10226 = 2.863 m
-        //     Free discharge exit:   Le/D=56  → Le = 56 × 0.10226 = 5.727 m  (covers KE loss)
-        //     ΣLe = 26.588 m  (Le/D_total = 260)
-        //   Total effective length: L = 100.584 + 26.588 = 127.172 m
+        //     ΣLe = 17.998 m  (Le/D_total = 176)
+        //   Total effective length: L = 100.584 + 17.998 = 118.582 m
         //   Total available head:   H = 40 ft × 0.3048 = 12.192 m
-        //
-        // ── Energy balance (Bernoulli) ────────────────────────────────────────────
-        //   Point 1: tank surface  → z₁ = 12.192 m, P₁ = 0, v₁ = 0
-        //   Point 2: channel exit  → z₂ = 0, P₂ = 0, v₂ = 0
-        //     (exit kinetic energy is already captured by Le/D=56 free-discharge entry)
-        //   ⟹ E₁ = z₁ = 12.192 m  →  all head dissipated as ΣhL = f·(L/D)·v²/2g
-        //
-        // ── Expected results (textbook — Moody chart reading) ─────────────────────
-        //   v = 9.65 ft/s = 2.941 m/s  |  NR = 1.12×10⁵  |  f = 0.0216
-        //   hL = 38.9 ft = 11.86 m     |  Q = 0.854 ft³/s = 0.02418 m³/s = 383 GPM
-        //
-        // ── App result (Colebrook-White analytical solver) ─────────────────────────
-        //   f ≈ 0.0196 (vs. 0.0216 Moody chart) → v ≈ 10.3 ft/s, Q ≈ 0.91 ft³/s (~6% higher)
-        //   This difference is inherent: Colebrook is more precise than a graphical Moody read.
         sys = {
             exampleId: 'app2',
             fluidName: 'Agua / Water (H₂O)',
@@ -6092,12 +6076,10 @@ const FluidUI = (() => {
                 {
                     // Point 2 — Free discharge into open channel
                     // z = 0 (datum), P = 0 (atmospheric)
-                    // v₂ = 0 because the free-discharge entry (Le/D=56) already accounts
-                    // for the kinetic energy loss at the pipe exit
                     id: 2, label: 'Free discharge — open channel (Point 2)',
                     P: 0,
                     z: 0,
-                    v: 0    // KE loss captured via Le/D=56 equivalent length
+                    v: 'auto'    // KE loss evaluated naturally using Q/A
                 }
             ],
             segments: [
@@ -6106,22 +6088,20 @@ const FluidUI = (() => {
                     // 4" Sch 40 steel pipe
                     // D = 0.3355 ft = 0.10226 m  |  A = 0.08840 ft² = 0.008213 m²
                     // L_pipe = 300 ft horizontal + 30 ft vertical = 330 ft = 100.584 m
-                    // Plus all fitting equivalent lengths (Le/D method):
-                    //   ΣLe = (16+160+28+56) × 0.10226 = 260 × 0.10226 = 26.588 m
-                    // L_total = 100.584 + 26.588 = 127.172 m
+                    // Plus equivalent lengths of stated accessories (Le/D method):
+                    //   ΣLe = (16+160) × 0.10226 = 176 × 0.10226 = 17.998 m
+                    // L_total = 100.584 + 17.998 = 118.582 m
                     D: 0.10226,    // 4" Sch 40 internal diameter (m)
                     v: 'auto',
                     eps: 4.572e-5, // 0.00015 ft × 0.3048 = commercial steel (m)
-                    L: 127.172,    // effective total length: pipe run + all Le/D fittings (m)
+                    L: 118.582,    // effective total length: pipe run + Le/D fittings (m)
                     has_pump: false,
                     eta: 1,
                     accessories: [
-                        // NOTE: All fittings are included in L via the Le/D equivalent-length method.
+                        // NOTE: Fittings are included in L via the Le/D equivalent-length method.
                         // K=0 here — losses are entirely in the pipe friction term f·(L/D)·v²/2g.
-                        { name: 'Long-radius 90° elbow (Le/D=16)', K: 0, qty: 1 },
-                        { name: 'Gate valve — 50% open (Le/D=160)', K: 0, qty: 1 },
-                        { name: 'Sharp-edged flush entrance (Le/D=28)', K: 0, qty: 1 },
-                        { name: 'Free discharge exit (Le/D=56)', K: 0, qty: 1 }
+                        { name: 'Long-radius 90° elbow', K: 0, qty: 1 },
+                        { name: 'Gate valve — 50% open', K: 0, qty: 1 }
                     ]
                 }
             ]
