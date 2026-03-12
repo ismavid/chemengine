@@ -5915,7 +5915,7 @@ window.CreUI = CreUI;
 </script>
   <script>
 // ui_fluid.js — Fluid Mechanics Calculator UI
-// Mott "Applied Fluid Mechanics" exercises 11.2 and 11.29
+// Mott "Applied Fluid Mechanics" exercises 11.2, 11.29 and Application Exercise 2
 
 const FluidUI = (() => {
     // ─── i18n helper ──────────────────────────────────────────────────────────
@@ -6032,6 +6032,106 @@ const FluidUI = (() => {
         if (mount) render(mount);
     }
 
+    function loadExampleApp2() {
+        // Application Exercise 2 — Hydraulic System Analysis
+        // Water supply system: storage tank → open channel through 4" Sch 40 steel pipe
+        //
+        // ── US Customary → SI conversions ────────────────────────────────────────
+        //   Water at 80°F:
+        //     ρ = 62.22 lb/ft³ × 16.0185 = 997.1 kg/m³
+        //     ν = 2.893×10⁻⁵ ft²/s × 0.0929 = 2.688×10⁻⁶ m²/s
+        //     γ = 997.1 × 9.81 / 1000 = 9.777 kN/m³
+        //   Pipe (4" Sch 40 commercial steel):
+        //     D = 0.3355 ft × 0.3048 = 0.10226 m  |  ε = 0.00015 ft × 0.3048 = 4.572×10⁻⁵ m
+        //   Pipe run: 300 ft horizontal + 30 ft vertical descent = 330 ft total
+        //     L_pipe = 330 ft × 0.3048 = 100.584 m
+        //   Fittings (Le/D equivalent-length method, D=0.10226 m):
+        //     Long-radius 90° elbow: Le/D=16  → Le = 16 × 0.10226 = 1.636 m
+        //     Gate valve 50% open:   Le/D=160 → Le = 160 × 0.10226 = 16.362 m
+        //     Sharp inlet:           Le/D=28  → Le = 28 × 0.10226 = 2.863 m
+        //     Free discharge exit:   Le/D=56  → Le = 56 × 0.10226 = 5.727 m  (covers KE loss)
+        //     ΣLe = 26.588 m  (Le/D_total = 260)
+        //   Total effective length: L = 100.584 + 26.588 = 127.172 m
+        //   Total available head:   H = 40 ft × 0.3048 = 12.192 m
+        //
+        // ── Energy balance (Bernoulli) ────────────────────────────────────────────
+        //   Point 1: tank surface  → z₁ = 12.192 m, P₁ = 0, v₁ = 0
+        //   Point 2: channel exit  → z₂ = 0, P₂ = 0, v₂ = 0
+        //     (exit kinetic energy is already captured by Le/D=56 free-discharge entry)
+        //   ⟹ E₁ = z₁ = 12.192 m  →  all head dissipated as ΣhL = f·(L/D)·v²/2g
+        //
+        // ── Expected results (textbook — Moody chart reading) ─────────────────────
+        //   v = 9.65 ft/s = 2.941 m/s  |  NR = 1.12×10⁵  |  f = 0.0216
+        //   hL = 38.9 ft = 11.86 m     |  Q = 0.854 ft³/s = 0.02418 m³/s = 383 GPM
+        //
+        // ── App result (Colebrook-White analytical solver) ─────────────────────────
+        //   f ≈ 0.0196 (vs. 0.0216 Moody chart) → v ≈ 10.3 ft/s, Q ≈ 0.91 ft³/s (~6% higher)
+        //   This difference is inherent: Colebrook is more precise than a graphical Moody read.
+        sys = {
+            exampleId: 'app2',
+            fluidName: 'Agua / Water (H₂O)',
+            tempC: 26.67,   // 80°F = 26.67°C (overridden by customFluid below)
+            Q: 0.02,
+            unitSys: 'SI',
+            customFluid: {
+                enabled: true,
+                rho: 997.1,    // 62.22 lb/ft³ → 997.1 kg/m³
+                gamma: 9.777,  // 997.1 × 9.81 / 1000 kN/m³
+                nu: 2.688e-6   // 2.893×10⁻⁵ ft²/s → 2.688×10⁻⁶ m²/s
+            },
+            unknown: { type: 'Q', index: 0 },
+            points: [
+                {
+                    // Point 1 — Large storage tank surface
+                    // Total head = 10 ft water depth + 30 ft vertical drop = 40 ft = 12.192 m above exit
+                    id: 1, label: 'Storage tank surface (Point 1)',
+                    P: 0,
+                    z: 12.192,  // 40 ft × 0.3048 m/ft — datum at channel exit
+                    v: 0        // large tank, surface velocity ≈ 0
+                },
+                {
+                    // Point 2 — Free discharge into open channel
+                    // z = 0 (datum), P = 0 (atmospheric)
+                    // v₂ = 0 because the free-discharge entry (Le/D=56) already accounts
+                    // for the kinetic energy loss at the pipe exit
+                    id: 2, label: 'Free discharge — open channel (Point 2)',
+                    P: 0,
+                    z: 0,
+                    v: 0    // KE loss captured via Le/D=56 equivalent length
+                }
+            ],
+            segments: [
+                {
+                    id: 1,
+                    // 4" Sch 40 steel pipe
+                    // D = 0.3355 ft = 0.10226 m  |  A = 0.08840 ft² = 0.008213 m²
+                    // L_pipe = 300 ft horizontal + 30 ft vertical = 330 ft = 100.584 m
+                    // Plus all fitting equivalent lengths (Le/D method):
+                    //   ΣLe = (16+160+28+56) × 0.10226 = 260 × 0.10226 = 26.588 m
+                    // L_total = 100.584 + 26.588 = 127.172 m
+                    D: 0.10226,    // 4" Sch 40 internal diameter (m)
+                    v: 'auto',
+                    eps: 4.572e-5, // 0.00015 ft × 0.3048 = commercial steel (m)
+                    L: 127.172,    // effective total length: pipe run + all Le/D fittings (m)
+                    has_pump: false,
+                    eta: 1,
+                    accessories: [
+                        // NOTE: All fittings are included in L via the Le/D equivalent-length method.
+                        // K=0 here — losses are entirely in the pipe friction term f·(L/D)·v²/2g.
+                        { name: 'Long-radius 90° elbow (Le/D=16)', K: 0, qty: 1 },
+                        { name: 'Gate valve — 50% open (Le/D=160)', K: 0, qty: 1 },
+                        { name: 'Sharp-edged flush entrance (Le/D=28)', K: 0, qty: 1 },
+                        { name: 'Free discharge exit (Le/D=56)', K: 0, qty: 1 }
+                    ]
+                }
+            ]
+        };
+        nextPointId = 3;
+        nextSegId = 2;
+        const mount = document.getElementById('fluid-ui-mount');
+        if (mount) render(mount);
+    }
+
     // ─── Point / Segment Mutators ─────────────────────────────────────────────
 
     function addPoint() {
@@ -6106,6 +6206,7 @@ const FluidUI = (() => {
                                 <option value="">${L('fluid.load.ex', '-- Load Example --')}</option>
                                 <option value="11_2" ${sys.exampleId === '11_2' ? 'selected' : ''}>Ejercicio 11.1 (Mott)</option>
                                 <option value="11_29" ${sys.exampleId === '11_29' ? 'selected' : ''}>Ejercicio 11.29 (Mott)</option>
+                                <option value="app2" ${sys.exampleId === 'app2' ? 'selected' : ''}>App. Exercise 2 — Hydraulic System (US)</option>
                             </select>
                         </div>
 
@@ -6473,6 +6574,7 @@ const FluidUI = (() => {
         mount.querySelector('#fluid-load-ex')?.addEventListener('change', e => {
             if (e.target.value === '11_2') loadExample11_2();
             else if (e.target.value === '11_29') loadExample11_29();
+            else if (e.target.value === 'app2') loadExampleApp2();
         });
 
         // Custom fluid toggle
